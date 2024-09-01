@@ -5,8 +5,9 @@ public class Main {
         long startTime = System.currentTimeMillis();
         if(sud.solveSudoku()) {
             long estimatedTime = System.currentTimeMillis() - startTime;
+            double estimatedTimeInSeconds = estimatedTime / 1000.0;
             System.out.println(sud);
-            System.out.println("This sudoku was solved in " + estimatedTime + " seconds!");
+            System.out.println("This sudoku was solved in " + estimatedTimeInSeconds + " seconds!");
         }
         else {
             System.out.println("There is no solution for this sudoku. (Sad!)");
