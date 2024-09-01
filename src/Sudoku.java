@@ -10,7 +10,10 @@ public class Sudoku {
     public Sudoku() {
         board = new int[9][9];
         subgridMissingNumbers = new HashMap<>();
-        initializeSubgridMissingNumbers();
+        // Initialize the subgridMissingNumbers Hashmap and fill it
+        for (int i = 0; i < 9; i++) {
+            subgridMissingNumbers.put(i, new HashSet<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9)));
+        }
         readSudokuFromFile(System.getProperty("user.dir") + "\\src\\example.txt");
     }
 
@@ -31,11 +34,15 @@ public class Sudoku {
         return false;
     }
 
+
+
+    // --- Utils ---
+
     // Find the subgrid with the least missing numbers, then find the first empty cell in that subgrid.
     private int[] findEmptyCell() {
         int min = -1;
         for (int i = 0; i < subgridMissingNumbers.size(); i++) {
-            if (subgridMissingNumbers.get(i).size() == 0) continue;
+            if (subgridMissingNumbers.get(i).isEmpty()) continue;
 
             // If 'min' has not been set yet, or the current subgrid has fewer missing numbers, update 'min'.
             if (min == -1 || subgridMissingNumbers.get(i).size() < subgridMissingNumbers.get(min).size()) min = i;
@@ -54,59 +61,6 @@ public class Sudoku {
         return new int[]{-1, -1};
     }
 
-    private void initializeSubgridMissingNumbers() {
-        for (int i = 0; i < 9; i++) {
-            subgridMissingNumbers.put(i, new HashSet<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9)));
-        }
-    }
-
-    private int getSubgrid(int row, int col) {
-        if((row<0 || row>8) || (col<0 || col>8)) return 0;
-        return (row / 3) * 3 + col / 3;
-    }
-
-    public int[] getRowCol(int subgridIndex) {
-        if(subgridIndex<0 || subgridIndex>8) return new int[]{0,0};
-        return new int[]{(subgridIndex / 3) * 3, (subgridIndex % 3) * 3};
-    }
-
-    public void setCell(int row, int col, int val) {
-        int sg = getSubgrid(row, col);
-        // Allow val == 0 to allow for initializing the grid itself
-        if(subgridMissingNumbers.get(sg).contains(val) || val == 0) {
-            board[row][col] = val;
-            subgridMissingNumbers.get(sg).remove(val);
-            return;
-        }
-        System.out.println("Tried placing already existing number in subgrid, please check it out!");
-        System.out.println("Row: " + row + "\tCol: " + col + "\tValue: " + val);
-    }
-
-    public void removeCell(int row, int col) {
-        if (board[row][col] == 0) return;
-
-        int sg = getSubgrid(row, col);
-        subgridMissingNumbers.get(sg).add(board[row][col]);
-        board[row][col] = 0;
-    }
-
-    public int getCell(int row, int col) {
-        return board[row][col];
-    }
-
-    public boolean isEmptyCell(int row, int col) {
-        return board[row][col] == 0;
-    }
-
-    // Check rows and columns for duplicates, then check if the number is missing in the 3x3 subgrid
-    public boolean isValidCell(int row, int col, int val) {
-        for (int i = 0; i < 9; i++) {
-            if(board[row][i] == val || board[i][col] == val) return false;
-        }
-
-        return subgridMissingNumbers.get(getSubgrid(row, col)).contains(val);
-    }
-
     private void readSudokuFromFile(String fileName) {
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
@@ -121,6 +75,61 @@ public class Sudoku {
             e.printStackTrace();
         }
     }
+
+
+
+    // --- Basics ---
+
+    private int getSubgrid(int row, int col) {
+        if((row<0 || row>8) || (col<0 || col>8)) return 0;
+        return (row / 3) * 3 + col / 3;
+    }
+
+    private int[] getRowCol(int subgridIndex) {
+        if(subgridIndex<0 || subgridIndex>8) return new int[]{0,0};
+        return new int[]{(subgridIndex / 3) * 3, (subgridIndex % 3) * 3};
+    }
+
+    private void setCell(int row, int col, int val) {
+        int sg = getSubgrid(row, col);
+        // Allow val == 0 to allow for initializing the grid itself
+        if(subgridMissingNumbers.get(sg).contains(val) || val == 0) {
+            board[row][col] = val;
+            subgridMissingNumbers.get(sg).remove(val);
+            return;
+        }
+        System.out.println("Tried placing already existing number in subgrid, please check it out!");
+        System.out.println("Row: " + row + "\tCol: " + col + "\tValue: " + val);
+    }
+
+    private void removeCell(int row, int col) {
+        if (board[row][col] == 0) return;
+
+        int sg = getSubgrid(row, col);
+        subgridMissingNumbers.get(sg).add(board[row][col]);
+        board[row][col] = 0;
+    }
+
+    private int getCell(int row, int col) {
+        return board[row][col];
+    }
+
+    private boolean isEmptyCell(int row, int col) {
+        return board[row][col] == 0;
+    }
+
+    // Check rows and columns for duplicates, then check if the number is missing in the 3x3 subgrid
+    private boolean isValidCell(int row, int col, int val) {
+        for (int i = 0; i < 9; i++) {
+            if(board[row][i] == val || board[i][col] == val) return false;
+        }
+
+        return subgridMissingNumbers.get(getSubgrid(row, col)).contains(val);
+    }
+
+
+
+    // --- Prints ---
 
     public void printSubgridsMissingNumbers() {
         for (int i = 0; i < 9; i++) {
